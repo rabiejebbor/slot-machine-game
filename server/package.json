@@ -1,0 +1,23 @@
+{
+  "name": "the-house-always-winsmedium-1-qzptjy",
+  "version": "1.0.0",
+  "description": "Jackpot! You've landed a summer gig in Las Vegas! Unfortunately, its 2020, and the casinos are closed due to COVID-19. Your boss wants to move some of the business online and asks you to build a fullstack app — a simple slot machine game, with a little twist. Build it to ensure that the house always wins!",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://cwmk-gmbh-bodsak@git.codesubmit.io/cwmk-gmbh/the-house-always-winsmedium-1-qzptjy"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "mongoose": "^6.7.1"
+  }
+}
