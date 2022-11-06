@@ -17,12 +17,20 @@ const getRandomisedArray = (array, numberOfSymbolsToReturn = 3) => {
     .map(() => getRandomArrayElement(array));
   return randomSymbols;
 };
+const getCookieValue = (name) =>
+  document.cookie.match("(^|;)\\s*" + name + "\\s*=\\s*([^;]+)")?.pop() || "";
 
 function App() {
   const [credits, setCredits] = useState(0);
+  const [account, setAccount] = useState(0);
+  const [msg, setMsg] = useState("");
+  const [cashOutButtonStyle, setCashOutButtonStyle] = useState({
+    position: "relative",
+  });
   const [symbolsRolled, setSymbolsRolled] = useState(
     getRandomisedArray(symbols)
   );
+  const [clickable, setClickable] = useState(true);
 
   const onRoll = async () => {
     const req = await fetch(`/slotmachine/leverpull`, { method: "POST" });
@@ -33,6 +41,7 @@ function App() {
     });
     setCredits(credits);
     setSymbolsRolled(formattedSymbolsArray);
+    setMsg(msg);
     //After receiving response from server, the first sign should spin for 1 second more and then display the result, then display the second sign at 2 seconds, then the third sign at 3 seconds.
 
     for (let i = 0; i < formattedSymbolsArray.length; i++) {
@@ -46,7 +55,35 @@ function App() {
     }
   };
   const onCashOut = async () => {
-    console.log("money transfered to acccout!");
+    if (!clickable) return;
+    const req = await fetch(`/slotmachine/cashout`, { method: "POST" });
+    const result = await req.json();
+    setAccount(getCookieValue("account"));
+    setCredits(0);
+    setMsg(result?.msg);
+  };
+
+  const onHover = () => {
+    //50% chance that button moves in a random direction by 300px
+    if (Math.random() < 50 / 100) {
+      const randomPosition = getRandomArrayElement([
+        "top",
+        "right",
+        "bottom",
+        "left",
+      ]);
+      setCashOutButtonStyle({
+        position: "relative",
+        [randomPosition]: "300px",
+      });
+    }
+    //40% chance that it becomes unclickable
+    if (Math.random() < 40 / 100) {
+      setClickable(false);
+      // setCashOutButtonStyle((oldObj) => {
+      //   return { ...oldObj, pointerEvents: "none" };
+      // });
+    } else setClickable(true);
   };
 
   useEffect(() => {
@@ -54,6 +91,7 @@ function App() {
       const req = await fetch(`/slotmachine/`, { method: "GET" });
       const result = await req.json();
       setCredits(result?.credits);
+      setAccount(getCookieValue("account"));
     };
     onStart();
   }, []);
@@ -80,7 +118,21 @@ function App() {
         {/* <button onClick={onStart}>start</button> */}
         <h6>{symbolsRolled.every((obj) => !obj.spinning) ? credits : "..."}</h6>
         {/* Include a button on the screen that says "CASH OUT", but when the user hovers it, there is 50% chance that button moves in a random direction by 300px, and 40% chance that it becomes unclickable (this roll should be done on client side). If they succeed to hit it, credits from session are moved to their account. */}
-        <button onClick={onCashOut}>CASH OUT</button>
+        <div className="cash-out-div">
+          <button
+            className="cash-out-button"
+            style={cashOutButtonStyle}
+            onClick={onCashOut}
+            onMouseEnter={onHover}
+          >
+            CASH OUT
+          </button>
+        </div>
+        <h4 className="msg">
+          {symbolsRolled.every((obj) => !obj.spinning) && msg}
+        </h4>
+
+        <h6>Account: {account}</h6>
       </header>
     </div>
   );

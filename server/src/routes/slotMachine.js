@@ -58,4 +58,20 @@ router.post("/leverpull", function (req, res, next) {
   });
 });
 
+router.post("/cashout", function (req, res, next) {
+  const { sessionID, session } = req;
+  res.cookie("account", session.credits);
+  session.destroy(function (err) {
+    if (!err)
+      res
+        .status(200)
+        .json({
+          sessionID,
+          credits: session.credits,
+          msg: "Credits moved to account successfully!",
+        });
+    else res.status(400);
+  });
+});
+
 module.exports = router;
