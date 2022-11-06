@@ -17,7 +17,7 @@ router.get("/", function (req, res, next) {
   session.credits = 10;
   resetSessionRoll(session);
 
-  res.status(200).json({ sessionID, session });
+  res.status(200).json({ sessionID, credits: session.credits });
 });
 
 router.post("/leverpull", function (req, res, next) {

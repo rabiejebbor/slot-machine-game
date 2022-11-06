@@ -24,8 +24,9 @@
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.slot-machine > tbody > tr > th {
+  color: red;
+  padding: 2rem;
 }
 
 @keyframes App-logo-spin {

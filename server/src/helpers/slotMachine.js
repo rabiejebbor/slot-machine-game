@@ -35,7 +35,7 @@ const getRollResults = (credits, symbolsRolled, rerollChance = 0) => {
     const winOnReroll = isWinningRoll(newSymbolsRolled);
     return {
       creditsResult,
-      symbolsRolled: newSymbolsRolled,
+      symbolsRolled: newSymbolsRolled.map((x) => x.symbol),
       win: winOnReroll,
       msg: winOnReroll
         ? `Congratulations you won ${getReward(newSymbolsRolled)} credits!`
@@ -44,14 +44,14 @@ const getRollResults = (credits, symbolsRolled, rerollChance = 0) => {
   } else if (win) {
     return {
       creditsResult: credits - rollingCost + getReward(symbolsRolled),
-      symbolsRolled,
+      symbolsRolled: symbolsRolled.map((x) => x.symbol),
       win,
       msg: `Congratulations you won ${getReward(symbolsRolled)} credits!`,
     };
   } else {
     return {
       creditsResult: credits - rollingCost,
-      symbolsRolled,
+      symbolsRolled: symbolsRolled.map((x) => x.symbol),
       win,
       msg: "better luck next time.",
     };
