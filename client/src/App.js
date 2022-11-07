@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
+import cherry from "./imgs/cherry.svg";
+import lemon from "./imgs/lemon.svg";
+import orange from "./imgs/orange.svg";
+import watermelon from "./imgs/watermelon.svg";
 import "./App.css";
 
 const symbols = [
-  { symbol: "cherry", spinning: false },
-  { symbol: "lemon", spinning: false },
-  { symbol: "orange", spinning: false },
-  { symbol: "watermelon", spinning: false },
+  { symbol: "cherry", spinning: false, svg: cherry },
+  { symbol: "lemon", spinning: false, svg: lemon },
+  { symbol: "orange", spinning: false, svg: orange },
+  { symbol: "watermelon", spinning: false, svg: watermelon },
 ];
 
 const getRandomArrayElement = (array) =>
@@ -30,6 +34,10 @@ function App() {
   const [symbolsRolled, setSymbolsRolled] = useState(
     getRandomisedArray(symbols)
   );
+  //for spinning animation
+  const [randomSymbols, setRandomSymbols] = useState(
+    getRandomisedArray(symbols)
+  );
   const [clickable, setClickable] = useState(true);
 
   const onRoll = async () => {
@@ -37,13 +45,19 @@ function App() {
     const result = await req.json();
     const { credits, symbolsRolled: newSymbolsRolled, win, msg } = result;
     const formattedSymbolsArray = newSymbolsRolled.map((symbol) => {
-      return { symbol, spinning: true };
+      return {
+        ...symbols.find((obj) => obj.symbol === symbol),
+        spinning: true,
+      };
     });
     setCredits(credits);
     setSymbolsRolled(formattedSymbolsArray);
     setMsg(msg);
-    //After receiving response from server, the first sign should spin for 1 second more and then display the result, then display the second sign at 2 seconds, then the third sign at 3 seconds.
 
+    // spinning animation
+    loopThroughSvgs(formattedSymbolsArray.length, symbols);
+
+    //After receiving response from server, the first sign should spin for 1 second more and then display the result, then display the second sign at 2 seconds, then the third sign at 3 seconds.
     for (let i = 0; i < formattedSymbolsArray.length; i++) {
       setTimeout(() => {
         setSymbolsRolled((oldArray) => [
@@ -80,10 +94,16 @@ function App() {
     //40% chance that it becomes unclickable
     if (Math.random() < 40 / 100) {
       setClickable(false);
-      // setCashOutButtonStyle((oldObj) => {
-      //   return { ...oldObj, pointerEvents: "none" };
-      // });
     } else setClickable(true);
+  };
+
+  const loopThroughSvgs = (DurationInSeconds, array) => {
+    const intervalId = window.setInterval(function () {
+      setRandomSymbols(getRandomisedArray(array));
+    }, 150);
+    setTimeout(() => {
+      clearInterval(intervalId);
+    }, DurationInSeconds * 1000);
   };
 
   useEffect(() => {
@@ -91,7 +111,6 @@ function App() {
       const req = await fetch(`/slotmachine/`, { method: "GET" });
       const result = await req.json();
       setCredits(result?.credits);
-      setAccount(getCookieValue("account"));
     };
     onStart();
   }, []);
@@ -99,14 +118,27 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
+        <h2>Slot Machine Game</h2>
         <table className="slot-machine">
           <tbody>
             <tr>
               {symbolsRolled.map((obj, i) =>
                 obj.spinning ? (
-                  <th key={i}>X</th>
+                  <th key={i}>
+                    <img
+                      style={{ height: "50px", width: "50px" }}
+                      src={randomSymbols[i].svg}
+                      alt={"spinning svg"}
+                    />
+                  </th>
                 ) : (
-                  <th key={i}>{obj.symbol[0]?.toUpperCase()}</th>
+                  <th key={i}>
+                    <img
+                      style={{ height: "50px", width: "50px" }}
+                      src={obj.svg}
+                      alt={obj.symbol}
+                    />
+                  </th>
                 )
               )}
               <th>
@@ -115,24 +147,23 @@ function App() {
             </tr>
           </tbody>
         </table>
-        {/* <button onClick={onStart}>start</button> */}
-        <h6>{symbolsRolled.every((obj) => !obj.spinning) ? credits : "..."}</h6>
-        {/* Include a button on the screen that says "CASH OUT", but when the user hovers it, there is 50% chance that button moves in a random direction by 300px, and 40% chance that it becomes unclickable (this roll should be done on client side). If they succeed to hit it, credits from session are moved to their account. */}
-        <div className="cash-out-div">
-          <button
-            className="cash-out-button"
-            style={cashOutButtonStyle}
-            onClick={onCashOut}
-            onMouseEnter={onHover}
-          >
-            CASH OUT
-          </button>
-        </div>
+        <button
+          className="cash-out-button"
+          style={cashOutButtonStyle}
+          onClick={onCashOut}
+          onMouseEnter={onHover}
+        >
+          CASH OUT
+        </button>
         <h4 className="msg">
           {symbolsRolled.every((obj) => !obj.spinning) && msg}
         </h4>
-
-        <h6>Account: {account}</h6>
+        <h6>
+          Credits:{" "}
+          {symbolsRolled.every((obj) => !obj.spinning) ? credits : "..."}
+          <span></span>
+          Account: {account}
+        </h6>
       </header>
     </div>
   );
